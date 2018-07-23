@@ -1,5 +1,9 @@
 package validator
 
+import (
+	"encoding/json"
+)
+
 const (
 	FieldWrongType = "WrongType" // field has wrong type
 	FieldRequired  = "Required"  // field is required
@@ -82,4 +86,12 @@ func Validate(input map[string]interface{}, rules VRules) VResults {
 	}
 
 	return res
+}
+
+func (frs VFieldResultSet) MarshalJSON() ([]byte, error) {
+	if len(frs) == 1 {
+		return json.Marshal(frs[0])
+	}
+
+	return json.Marshal(frs)
 }
