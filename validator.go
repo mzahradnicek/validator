@@ -44,8 +44,10 @@ type VFieldResultSet []*VFieldResult
 
 type VResults map[string]VFieldResultSet
 
-func Validate(input map[string]interface{}, rules VRules) VResults {
+func Validate(input map[string]interface{}, rules VRules) (VResults, bool) {
 	res := make(VResults)
+	resOk := true
+
 	for k, rule := range rules {
 
 		val, ok := input[k]
@@ -58,6 +60,7 @@ func Validate(input map[string]interface{}, rules VRules) VResults {
 		case string:
 			if err := rule.CheckValue(val.(string)); err != nil {
 				res[k] = VFieldResultSet{err}
+				resOk = false
 			}
 		case []string:
 			fres := VFieldResultSet{}
@@ -78,14 +81,16 @@ func Validate(input map[string]interface{}, rules VRules) VResults {
 
 			if setRes {
 				res[k] = fres
+				resOk = false
 			}
 
 		default:
 			res[k] = VFieldResultSet{&VFieldResult{FieldWrongType}}
+			resOk = false
 		}
 	}
 
-	return res
+	return res, resOk
 }
 
 func (frs VFieldResultSet) MarshalJSON() ([]byte, error) {
