@@ -5,31 +5,31 @@ import (
 )
 
 const (
-	FieldWrongType = "WrongType" // field has wrong type
-	FieldRequired  = "Required"  // field is required
-	FieldMinVal    = "MinVal"    // field is lower than min
-	FieldMaxVal    = "MaxVal"    // field is higher than max
+	FieldWrongType = "ValidatorWrongType" // field has wrong type
+	FieldRequired  = "ValidatorRequired"  // field is required
+	FieldMinVal    = "ValidatorMinVal"    // field is lower than min
+	FieldMaxVal    = "ValidatorMaxVal"    // field is higher than max
 
 	// Numeric
-	FieldNoNumeric          = "NumNotNum"       // field is not numeric
-	FieldIsNegative         = "NumIsNegative"   // numeric field is negative
-	FieldIsFloat            = "NumIsFloat"      // numeric is float
-	FieldHasTooManyDecimals = "NumManyDecimals" // field has too many decimals
+	FieldNoNumeric          = "ValidatorNumNotNum"       // field is not numeric
+	FieldIsNegative         = "ValidatorNumIsNegative"   // numeric field is negative
+	FieldIsFloat            = "ValidatorNumIsFloat"      // numeric is float
+	FieldHasTooManyDecimals = "ValidatorNumManyDecimals" // field has too many decimals
 
 	// Date
-	FieldNoDate = "DateNotDate"
-	MinNoDate   = "DateMinNotDate"
-	MaxNoDate   = "DateMaxNotDate"
+	FieldNoDate = "ValidatorDateNotDate"
+	MinNoDate   = "ValidatorDateMinNotDate"
+	MaxNoDate   = "ValidatorDateMaxNotDate"
 
 	// Email
-	FieldNoEmail = "EmailNotEmail"
+	FieldNoEmail = "ValidatorEmailNotEmail"
 
 	// Url
-	FieldNoUrl = "UrlNotUrl"
+	FieldNoUrl = "ValidatorUrlNotUrl"
 
 	// Regexp
-	FieldNoMatch   = "RegexpNoMatch"
-	FieldBadRegexp = "RegexpBad"
+	FieldNoMatch   = "ValidatorRegexpNoMatch"
+	FieldBadRegexp = "ValidatorRegexpBad"
 )
 
 type VRule interface {
