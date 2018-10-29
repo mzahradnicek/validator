@@ -12,8 +12,12 @@ type VText struct {
 }
 
 func (vr VText) CheckValue(v string) *VFieldResult {
-	if vr.Required && len(v) == 0 {
-		return &VFieldResult{FieldRequired}
+	if len(v) == 0 || v == "null" {
+		if vr.Required {
+			return &VFieldResult{FieldRequired}
+		} else {
+			return nil
+		}
 	}
 
 	if vr.Min > 0 && ((vr.RawLength && len(v) < vr.Min) || (!vr.RawLength && utf8.RuneCountInString(v) < vr.Min)) {

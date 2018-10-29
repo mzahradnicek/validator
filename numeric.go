@@ -15,8 +15,12 @@ type VNumeric struct {
 }
 
 func (vr VNumeric) CheckValue(v string) *VFieldResult {
-	if vr.Required && len(v) == 0 {
-		return &VFieldResult{FieldRequired}
+	if len(v) == 0 || v == "null" {
+		if vr.Required {
+			return &VFieldResult{FieldRequired}
+		} else {
+			return nil
+		}
 	}
 
 	re := regexp.MustCompile("^(-?\\d+)(?:\\.?(\\d*))?$")

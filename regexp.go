@@ -23,7 +23,7 @@ func (vr VRegexp) CheckValue(v string) *VFieldResult {
 		vr.regexp = re
 	}
 
-	if len(v) == 0 {
+	if len(v) == 0 || v == "null" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {

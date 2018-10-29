@@ -12,7 +12,7 @@ type VDate struct {
 }
 
 func (vr VDate) CheckValue(v string) *VFieldResult {
-	if len(v) == 0 {
+	if len(v) == 0 || v == "null" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {
