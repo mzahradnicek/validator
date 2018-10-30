@@ -1,18 +1,22 @@
 package validator
 
-import "strconv"
-import "unicode/utf8"
+import (
+	"fmt"
+	"strconv"
+	"unicode/utf8"
+)
 
 type VText struct {
 	Min       int
 	Max       int
-	Multiple  bool
 	Required  bool
 	RawLength bool
 }
 
-func (vr VText) CheckValue(v string) *VFieldResult {
-	if len(v) == 0 || v == "null" {
+func (vr VText) CheckValue(v interface{}) *VFieldResult {
+	str := fmt.Sprint(v)
+
+	if v == nil || str == "" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {
@@ -20,13 +24,17 @@ func (vr VText) CheckValue(v string) *VFieldResult {
 		}
 	}
 
-	if vr.Min > 0 && ((vr.RawLength && len(v) < vr.Min) || (!vr.RawLength && utf8.RuneCountInString(v) < vr.Min)) {
-		return &VFieldResult{FieldMinVal, strconv.Itoa(vr.Min)}
+	if vr.Min > 0 && ((vr.RawLength && len(str) < vr.Min) || (!vr.RawLength && utf8.RuneCountInString(str) < vr.Min)) {
+		return &VFieldResult{FieldTextMinVal, strconv.Itoa(vr.Min)}
 	}
 
-	if vr.Max > 0 && ((vr.RawLength && len(v) > vr.Max) || (!vr.RawLength && utf8.RuneCountInString(v) > vr.Max)) {
-		return &VFieldResult{FieldMaxVal, strconv.Itoa(vr.Max)}
+	if vr.Max > 0 && ((vr.RawLength && len(str) > vr.Max) || (!vr.RawLength && utf8.RuneCountInString(str) > vr.Max)) {
+		return &VFieldResult{FieldTextMaxVal, strconv.Itoa(vr.Max)}
 	}
 
 	return nil
+}
+
+func (vr VText) IsRequired() bool {
+	return vr.Required
 }

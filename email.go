@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -10,8 +11,10 @@ type VEmail struct {
 	Required bool
 }
 
-func (vr VEmail) CheckValue(v string) *VFieldResult {
-	if len(v) == 0 || v == "null" {
+func (vr VEmail) CheckValue(v interface{}) *VFieldResult {
+	str := fmt.Sprint(v)
+
+	if v == nil || str == "" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {
@@ -19,9 +22,13 @@ func (vr VEmail) CheckValue(v string) *VFieldResult {
 		}
 	}
 
-	if !regexEmail.MatchString(v) {
+	if !regexEmail.MatchString(str) {
 		return &VFieldResult{FieldNoEmail}
 	}
 
 	return nil
+}
+
+func (vr VEmail) IsRequired() bool {
+	return vr.Required
 }

@@ -2,24 +2,31 @@ package validator
 
 import (
 	"encoding/json"
+	"reflect"
 )
 
 const (
 	FieldWrongType = "ValidatorWrongType" // field has wrong type
 	FieldRequired  = "ValidatorRequired"  // field is required
-	FieldMinVal    = "ValidatorMinVal"    // field is lower than min
-	FieldMaxVal    = "ValidatorMaxVal"    // field is higher than max
+
+	// Text
+	FieldTextMinVal = "ValidatorTextMinVal" // text field length is lower than min
+	FieldTextMaxVal = "ValidatorTextMaxVal" // text field length is higher than max
 
 	// Numeric
 	FieldNoNumeric          = "ValidatorNumNotNum"       // field is not numeric
 	FieldIsNegative         = "ValidatorNumIsNegative"   // numeric field is negative
 	FieldIsFloat            = "ValidatorNumIsFloat"      // numeric is float
 	FieldHasTooManyDecimals = "ValidatorNumManyDecimals" // field has too many decimals
+	FieldNumMinVal          = "ValidatorNumMinVal"       // numeric value is lower than min
+	FieldNumMaxVal          = "ValidatorNumMaxVal"       // numeric value is higher than max
 
 	// Date
-	FieldNoDate = "ValidatorDateNotDate"
-	MinNoDate   = "ValidatorDateMinNotDate"
-	MaxNoDate   = "ValidatorDateMaxNotDate"
+	FieldNoDate     = "ValidatorDateNotDate"
+	MinNoDate       = "ValidatorDateMinNotDate"
+	MaxNoDate       = "ValidatorDateMaxNotDate"
+	FieldDateMinVal = "ValidatorDateMinVal"
+	FieldDateMaxVal = "ValidatorDateMaxVal"
 
 	// Email
 	FieldNoEmail = "ValidatorEmailNotEmail"
@@ -33,7 +40,8 @@ const (
 )
 
 type VRule interface {
-	CheckValue(v string) *VFieldResult
+	IsRequired() bool
+	CheckValue(v interface{}) *VFieldResult
 }
 
 type VRules map[string]VRule
@@ -49,45 +57,54 @@ func Validate(input map[string]interface{}, rules VRules) (VResults, bool) {
 	resOk := true
 
 	for k, rule := range rules {
-
 		val, ok := input[k]
 
-		if !ok {
-			val = ""
-		}
-
-		switch val.(type) {
-		case string:
-			if err := rule.CheckValue(val.(string)); err != nil {
-				res[k] = VFieldResultSet{err}
+		// check required and not set values
+		if !ok || val == nil {
+			if rule.IsRequired() {
+				res[k] = VFieldResultSet{&VFieldResult{FieldRequired}}
 				resOk = false
 			}
-		case []string:
+
+			continue
+		}
+
+		reflectVal := reflect.ValueOf(val)
+		switch reflectVal.Kind() {
+		case reflect.Array, reflect.Slice:
 			fres := VFieldResultSet{}
-			setRes := false
+			itemsCnt := reflectVal.Len()
 
-			if len(val.([]string)) == 0 {
-				val = []string{""}
-			}
+			// check required empty array
+			if itemsCnt > 0 {
+				setRes := false
+				for i := 0; i < itemsCnt; i++ {
+					itemErr := rule.CheckValue(reflectVal.Index(i).Interface())
+					if itemErr != nil {
+						setRes = true
+					}
 
-			for _, x := range val.([]string) {
-				err := rule.CheckValue(x)
-				if err != nil {
-					setRes = true
+					fres = append(fres, itemErr)
 				}
 
-				fres = append(fres, err)
-			}
+				if setRes {
+					res[k] = fres
+					resOk = false
+				}
 
-			if setRes {
+			} else if rule.IsRequired() {
+				fres = append(fres, &VFieldResult{FieldRequired})
 				res[k] = fres
 				resOk = false
 			}
 
 		default:
-			res[k] = VFieldResultSet{&VFieldResult{FieldWrongType}}
-			resOk = false
+			if err := rule.CheckValue(val); err != nil {
+				res[k] = VFieldResultSet{err}
+				resOk = false
+			}
 		}
+
 	}
 
 	return res, resOk

@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -10,7 +11,16 @@ type VRegexp struct {
 	regexp   *regexp.Regexp
 }
 
-func (vr VRegexp) CheckValue(v string) *VFieldResult {
+func (vr VRegexp) CheckValue(v interface{}) *VFieldResult {
+	str := fmt.Sprint(v)
+
+	if v == nil || str == "" {
+		if vr.Required {
+			return &VFieldResult{FieldRequired}
+		} else {
+			return nil
+		}
+	}
 
 	// compile regular expression
 	if vr.regexp == nil {
@@ -23,17 +33,13 @@ func (vr VRegexp) CheckValue(v string) *VFieldResult {
 		vr.regexp = re
 	}
 
-	if len(v) == 0 || v == "null" {
-		if vr.Required {
-			return &VFieldResult{FieldRequired}
-		} else {
-			return nil
-		}
-	}
-
-	if !vr.regexp.MatchString(v) {
+	if !vr.regexp.MatchString(str) {
 		return &VFieldResult{FieldNoMatch}
 	}
 
 	return nil
+}
+
+func (vr VRegexp) IsRequired() bool {
+	return vr.Required
 }

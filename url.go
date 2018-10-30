@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -10,8 +11,10 @@ type VUrl struct {
 	Required bool
 }
 
-func (vr VUrl) CheckValue(v string) *VFieldResult {
-	if len(v) == 0 || v == "null" {
+func (vr VUrl) CheckValue(v interface{}) *VFieldResult {
+	str := fmt.Sprint(v)
+
+	if v == nil || str == "" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {
@@ -21,9 +24,13 @@ func (vr VUrl) CheckValue(v string) *VFieldResult {
 
 	// make as url.parse
 
-	if !regexUrl.MatchString(v) {
+	if !regexUrl.MatchString(str) {
 		return &VFieldResult{FieldNoUrl}
 	}
 
 	return nil
+}
+
+func (vr VUrl) IsRequired() bool {
+	return vr.Required
 }

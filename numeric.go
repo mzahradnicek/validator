@@ -1,21 +1,29 @@
 package validator
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 )
 
+var regexNumeric = regexp.MustCompile("^(-?\\d+)(?:\\.?(\\d*))?$")
+
 type VNumeric struct {
-	Min      int
-	Max      int
-	Float    bool
-	Negative bool
-	Decimals int
-	Required bool
+	Min        int
+	Max        int
+	Minf       float64
+	Maxf       float64
+	CheckRange bool
+	Float      bool
+	Negative   bool
+	Decimals   int
+	Required   bool
 }
 
-func (vr VNumeric) CheckValue(v string) *VFieldResult {
-	if len(v) == 0 || v == "null" {
+func (vr VNumeric) CheckValue(v interface{}) *VFieldResult {
+	str := fmt.Sprint(v)
+
+	if v == nil || str == "" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {
@@ -23,8 +31,7 @@ func (vr VNumeric) CheckValue(v string) *VFieldResult {
 		}
 	}
 
-	re := regexp.MustCompile("^(-?\\d+)(?:\\.?(\\d*))?$")
-	matches := re.FindAllStringSubmatch(v, -1)
+	matches := regexNumeric.FindAllStringSubmatch(str, -1)
 
 	if len(matches) == 0 {
 		return &VFieldResult{FieldNoNumeric}
@@ -34,6 +41,10 @@ func (vr VNumeric) CheckValue(v string) *VFieldResult {
 
 	if err != nil {
 		return &VFieldResult{FieldNoNumeric}
+	}
+
+	if vr.Min < 0 || vr.Max < 0 || vr.Minf < 0 || vr.Maxf < 0 {
+		vr.Negative = true
 	}
 
 	if i < 0 && !vr.Negative {
@@ -48,19 +59,37 @@ func (vr VNumeric) CheckValue(v string) *VFieldResult {
 		return &VFieldResult{FieldHasTooManyDecimals, strconv.Itoa(vr.Decimals)}
 	}
 
-	if vr.Min == 0 && vr.Max == 0 {
+	if !vr.CheckRange && (!vr.Float && vr.Min == 0 && vr.Max == 0 || vr.Float && vr.Minf == 0 && vr.Maxf == 0) {
 		return nil
 	}
 
-	// d, _ := strconv.Atoi(matches[0][2]) // make also decimal part
+	// integer comparison
+	if !vr.Float {
+		if (vr.CheckRange || vr.Min != 0) && i < vr.Min {
+			return &VFieldResult{FieldNumMinVal, strconv.Itoa(vr.Min)}
+		}
 
-	if vr.Min != 0 && i < vr.Min {
-		return &VFieldResult{FieldMinVal, strconv.Itoa(vr.Min)}
-	}
+		if (vr.CheckRange || vr.Max != 0) && i > vr.Max {
+			return &VFieldResult{FieldNumMaxVal, strconv.Itoa(vr.Max)}
+		}
+	} else { // float comparison
+		f, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			return &VFieldResult{FieldNoNumeric}
+		}
 
-	if vr.Max != 0 && i > vr.Max {
-		return &VFieldResult{FieldMaxVal, strconv.Itoa(vr.Max)}
+		if (vr.CheckRange || vr.Minf != 0) && f < vr.Minf {
+			return &VFieldResult{FieldNumMinVal, fmt.Sprint(vr.Minf)}
+		}
+
+		if (vr.CheckRange || vr.Maxf != 0) && f > vr.Maxf {
+			return &VFieldResult{FieldNumMaxVal, fmt.Sprint(vr.Maxf)}
+		}
 	}
 
 	return nil
+}
+
+func (vr VNumeric) IsRequired() bool {
+	return vr.Required
 }

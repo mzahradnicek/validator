@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -11,8 +12,10 @@ type VDate struct {
 	Required bool
 }
 
-func (vr VDate) CheckValue(v string) *VFieldResult {
-	if len(v) == 0 || v == "null" {
+func (vr VDate) CheckValue(v interface{}) *VFieldResult {
+	str := fmt.Sprint(v)
+
+	if v == nil || str == "" {
 		if vr.Required {
 			return &VFieldResult{FieldRequired}
 		} else {
@@ -20,7 +23,7 @@ func (vr VDate) CheckValue(v string) *VFieldResult {
 		}
 	}
 
-	dt, err := time.Parse(vr.Format, v)
+	dt, err := time.Parse(vr.Format, str)
 
 	if err != nil {
 		return &VFieldResult{FieldNoDate}
@@ -34,7 +37,7 @@ func (vr VDate) CheckValue(v string) *VFieldResult {
 		}
 
 		if dt.Before(min) {
-			return &VFieldResult{FieldMinVal, vr.Min}
+			return &VFieldResult{FieldDateMinVal, vr.Min}
 		}
 	}
 
@@ -46,9 +49,13 @@ func (vr VDate) CheckValue(v string) *VFieldResult {
 		}
 
 		if dt.After(max) {
-			return &VFieldResult{FieldMaxVal, vr.Max}
+			return &VFieldResult{FieldDateMaxVal, vr.Max}
 		}
 	}
 
 	return nil
+}
+
+func (vr VDate) IsRequired() bool {
+	return vr.Required
 }
