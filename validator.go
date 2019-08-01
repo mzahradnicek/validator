@@ -48,9 +48,9 @@ type VRules map[string]VRule
 
 type VFieldResult []string
 
-type VFieldResultSet []*VFieldResult
+type VFieldResultSet []VFieldResult
 
-type VResults map[string]VFieldResultSet
+type VResults map[string]interface{} // VFieldResultSet
 
 func Validate(input map[string]interface{}, rules VRules) (VResults, bool) {
 	res := make(VResults)
@@ -102,6 +102,7 @@ func Validate(input map[string]interface{}, rules VRules) (VResults, bool) {
 			if err := rule.CheckValue(val); err != nil {
 				res[k] = VFieldResultSet{err}
 				resOk = false
+			} else if v, ok := rule.(VStruc); ok {
 			}
 		}
 

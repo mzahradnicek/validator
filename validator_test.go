@@ -1,29 +1,42 @@
 package validator
 
 import (
-	"reflect"
+	"encoding/json"
+	"fmt"
+	// "reflect"
 	"testing"
 )
 
 func TestValidate(t *testing.T) {
 
-	tables := []struct {
-		validator VDate
-		v         interface{}
-		res       *VFieldResult
-	}{
-		{VDate{}, nil, nil},
-
-		// Required
-		{VDate{Required: true}, nil, &VFieldResult{FieldRequired}},
-		{VDate{Required: true}, "", &VFieldResult{FieldRequired}},
-
-		// write some cases
+	rules := VRules{
+		"name":   VText{Required: true},
+		"age":    VNumeric{Required: true, Min: 18},
+		"street": VText{Required: true},
 	}
 
-	for _, table := range tables {
-		if res := table.validator.CheckValue(table.v); (res == nil && table.res != nil) || (res != nil && !reflect.DeepEqual(*res, *table.res)) {
-			t.Errorf("Text validator %+v for \"%v\" got:  \"%v\", want: \"%v\".", table.validator, table.v, res, table.res)
+	jsonText := "{\"name\": \"John Doe\", \"age\": 15, \"street\": \"\"}"
+	data := map[string]interface{}{}
+
+	err := json.Unmarshal([]byte(jsonText), &data)
+	if err != nil {
+		fmt.Println("JSON Error: ", err)
+	}
+
+	// wants := VResults{}
+
+	res, ok := Validate(data, rules)
+	fmt.Printf("res: %#v\nstatus: %v\n\n", res, ok)
+
+	for k, v := range res {
+		fmt.Printf("Key: %v, Value: %+v\n", k, v[0])
+	}
+
+	/*
+		for _, table := range tables {
+			if res := table.validator.CheckValue(table.v); (res == nil && table.res != nil) || (res != nil && !reflect.DeepEqual(*res, *table.res)) {
+				t.Errorf("Text validator %+v for \"%v\" got:  \"%v\", want: \"%v\".", table.validator, table.v, res, table.res)
+			}
 		}
-	}
+	*/
 }
