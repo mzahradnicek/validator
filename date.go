@@ -12,12 +12,12 @@ type VDate struct {
 	Required bool
 }
 
-func (vr VDate) CheckValue(v interface{}) *VFieldResult {
+func (vr VDate) CheckValue(v interface{}) error {
 	str := fmt.Sprint(v)
 
 	if v == nil || str == "" {
 		if vr.Required {
-			return &VFieldResult{FieldRequired}
+			return &FieldError{FieldRequired}
 		} else {
 			return nil
 		}
@@ -26,18 +26,18 @@ func (vr VDate) CheckValue(v interface{}) *VFieldResult {
 	dt, err := time.Parse(vr.Format, str)
 
 	if err != nil {
-		return &VFieldResult{FieldNoDate}
+		return &FieldError{FieldNoDate}
 	}
 
 	if vr.Min != "" {
 		min, err := time.Parse(vr.Format, vr.Min)
 
 		if err != nil {
-			return &VFieldResult{MinNoDate}
+			return &FieldError{MinNoDate}
 		}
 
 		if dt.Before(min) {
-			return &VFieldResult{FieldDateMinVal, vr.Min}
+			return &FieldError{FieldDateMinVal, vr.Min}
 		}
 	}
 
@@ -45,11 +45,11 @@ func (vr VDate) CheckValue(v interface{}) *VFieldResult {
 		max, err := time.Parse(vr.Format, vr.Max)
 
 		if err != nil {
-			return &VFieldResult{MaxNoDate}
+			return &FieldError{MaxNoDate}
 		}
 
 		if dt.After(max) {
-			return &VFieldResult{FieldDateMaxVal, vr.Max}
+			return &FieldError{FieldDateMaxVal, vr.Max}
 		}
 	}
 

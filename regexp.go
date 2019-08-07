@@ -11,12 +11,12 @@ type VRegexp struct {
 	regexp   *regexp.Regexp
 }
 
-func (vr VRegexp) CheckValue(v interface{}) *VFieldResult {
+func (vr VRegexp) CheckValue(v interface{}) error {
 	str := fmt.Sprint(v)
 
 	if v == nil || str == "" {
 		if vr.Required {
-			return &VFieldResult{FieldRequired}
+			return &FieldError{FieldRequired}
 		} else {
 			return nil
 		}
@@ -27,14 +27,14 @@ func (vr VRegexp) CheckValue(v interface{}) *VFieldResult {
 		re, err := regexp.Compile(vr.Pattern)
 
 		if err != nil {
-			return &VFieldResult{FieldBadRegexp}
+			return &FieldError{FieldBadRegexp}
 		}
 
 		vr.regexp = re
 	}
 
 	if !vr.regexp.MatchString(str) {
-		return &VFieldResult{FieldNoMatch}
+		return &FieldError{FieldNoMatch}
 	}
 
 	return nil

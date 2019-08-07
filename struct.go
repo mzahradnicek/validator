@@ -1,29 +1,24 @@
 package validator
 
-import (
-	"fmt"
-	"strconv"
-	"unicode/utf8"
-)
+import "fmt"
 
 type VStruct struct {
 	Rules    VRules
 	Required bool
 }
 
-func (vr VStruct) CheckValue(v interface{}) *VFieldResult {
-	// validate
-	str := fmt.Sprint(v)
-
-	if v == nil || str == "" {
-		if vr.Required {
-			return &VFieldResult{FieldRequired}
-		} else {
-			return nil
-		}
+func (vr VStruct) CheckValue(v interface{}) error {
+	if v == nil && vr.Required {
+		return &FieldError{FieldRequired}
 	}
 
-	return nil
+	fmt.Printf("Validate struct\n")
+
+	res := vr.Rules.Validate(v)
+
+	fmt.Printf("%#v\n", res)
+
+	return res
 }
 
 func (vr VStruct) IsRequired() bool {

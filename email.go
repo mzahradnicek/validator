@@ -11,19 +11,19 @@ type VEmail struct {
 	Required bool
 }
 
-func (vr VEmail) CheckValue(v interface{}) *VFieldResult {
+func (vr VEmail) CheckValue(v interface{}) error {
 	str := fmt.Sprint(v)
 
 	if v == nil || str == "" {
 		if vr.Required {
-			return &VFieldResult{FieldRequired}
+			return &FieldError{FieldRequired}
 		} else {
 			return nil
 		}
 	}
 
 	if !regexEmail.MatchString(str) {
-		return &VFieldResult{FieldNoEmail}
+		return &FieldError{FieldNoEmail}
 	}
 
 	return nil

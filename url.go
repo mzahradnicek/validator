@@ -11,12 +11,12 @@ type VUrl struct {
 	Required bool
 }
 
-func (vr VUrl) CheckValue(v interface{}) *VFieldResult {
+func (vr VUrl) CheckValue(v interface{}) error {
 	str := fmt.Sprint(v)
 
 	if v == nil || str == "" {
 		if vr.Required {
-			return &VFieldResult{FieldRequired}
+			return &FieldError{FieldRequired}
 		} else {
 			return nil
 		}
@@ -25,7 +25,7 @@ func (vr VUrl) CheckValue(v interface{}) *VFieldResult {
 	// make as url.parse
 
 	if !regexUrl.MatchString(str) {
-		return &VFieldResult{FieldNoUrl}
+		return &FieldError{FieldNoUrl}
 	}
 
 	return nil
