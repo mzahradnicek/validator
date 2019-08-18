@@ -9,7 +9,7 @@ type RulesError map[string]error
 
 func (re RulesError) Error() string {
 	if len(re) > 0 {
-		return "There are errors"
+		return "The form contains errors"
 	} else {
 		return ""
 	}
