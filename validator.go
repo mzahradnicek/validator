@@ -73,7 +73,7 @@ func (vr VRules) ValidateMap(input map[string]interface{}) error {
 		// check required and not set values
 		if !ok || val == nil {
 			if rule.IsRequired() {
-				res[k] = &FieldErrorSet{&FieldError{FieldRequired}}
+				res[k] = &FieldError{FieldRequired}
 			}
 
 			continue
@@ -85,32 +85,22 @@ func (vr VRules) ValidateMap(input map[string]interface{}) error {
 			itemsCnt := reflectVal.Len()
 
 			if itemsCnt == 0 && rule.IsRequired() {
-				res[k] = &FieldErrorSet{&FieldError{FieldRequired}}
+				res[k] = &FieldError{FieldRequired}
 				break
 			}
 
 			fes := FieldErrorSet{}
 
 			for i := 0; i < itemsCnt; i++ {
-				if err := rule.CheckValue(reflectVal.Index(i).Interface()); err != nil {
-					if fe, ok := err.(*FieldError); ok {
-						fes = append(fes, fe)
-					} else {
-						res[k] = err
-					}
-				}
+				fes = append(fes, rule.CheckValue(reflectVal.Index(i).Interface()))
 			}
 
-			if len(fes) > 0 {
+			if fes.HasErrors() {
 				res[k] = &fes
 			}
 		default:
 			if err := rule.CheckValue(val); err != nil {
-				if fe, ok := err.(*FieldError); ok {
-					res[k] = &FieldErrorSet{fe}
-				} else {
-					res[k] = err
-				}
+				res[k] = err
 			}
 		}
 	}

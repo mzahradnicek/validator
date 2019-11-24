@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"encoding/json"
 	"strings"
 )
 
@@ -31,29 +30,27 @@ func (fe *FieldError) Error() string {
 }
 
 /* List of errors for field */
-type FieldErrorSet []*FieldError
+type FieldErrorSet []error
 
 func (fes *FieldErrorSet) Error() string {
 	return "" //????
 }
 
-func (fes *FieldErrorSet) HasError() bool {
-	return len(*fes) > 0
-}
-
-func (fes *FieldErrorSet) Add(m ...*FieldError) {
-	*fes = append(*fes, m...)
-}
-
-func (fes FieldErrorSet) MarshalJSON() ([]byte, error) {
-	if len(fes) == 1 {
-		return json.Marshal(fes[0])
+func (fes *FieldErrorSet) HasErrors() bool {
+	if len(*fes) == 0 {
+		return false
 	}
 
-	return json.Marshal(fes)
+	for _, v := range *fes {
+		if v != nil {
+			return true
+		}
+	}
+
+	return false
 }
 
-func NewFieldErrorSet(m ...*FieldError) *FieldErrorSet {
+func NewFieldErrorSet(m ...error) *FieldErrorSet {
 	res := FieldErrorSet{}
 	res = append(res, m...)
 
