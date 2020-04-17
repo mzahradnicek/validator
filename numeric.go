@@ -21,7 +21,16 @@ type VNumeric struct {
 }
 
 func (vr VNumeric) CheckValue(v interface{}) error {
-	str := fmt.Sprint(v)
+	var str string
+
+	switch n := v.(type) {
+	case float64:
+		str = strconv.FormatFloat(n, 'f', -1, 64)
+	case float32:
+		str = strconv.FormatFloat(float64(n), 'f', -1, 32)
+	default:
+		str = fmt.Sprint(n)
+	}
 
 	if v == nil || str == "" {
 		if vr.Required {
