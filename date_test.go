@@ -9,19 +9,25 @@ func TestVDate(t *testing.T) {
 	tables := []struct {
 		validator VDate
 		v         interface{}
-		res       *VFieldResult
+		res       *FieldError
 	}{
 		{VDate{}, nil, nil},
 
 		// Required
-		{VDate{Required: true}, nil, &VFieldResult{FieldRequired}},
-		{VDate{Required: true}, "", &VFieldResult{FieldRequired}},
+		{VDate{Required: true}, nil, &FieldError{FieldRequired}},
+		{VDate{Required: true}, "", &FieldError{FieldRequired}},
 
 		// write some cases
 	}
 
 	for _, table := range tables {
-		if res := table.validator.CheckValue(table.v); (table.res != res && (table.res == nil || res == nil)) || (table.res != nil && res != nil && !reflect.DeepEqual(*res, *table.res)) {
+		var res *FieldError
+		eres := table.validator.CheckValue(table.v)
+		if eres != nil {
+			res = eres.(*FieldError)
+		}
+
+		if (table.res != res && (table.res == nil || res == nil)) || (table.res != nil && res != nil && !reflect.DeepEqual(*res, *table.res)) {
 			t.Errorf("Text validator %+v for \"%v\" got:  \"%v\", want: \"%v\".", table.validator, table.v, res, table.res)
 		}
 	}

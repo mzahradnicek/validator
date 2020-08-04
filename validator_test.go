@@ -25,12 +25,14 @@ func TestValidate(t *testing.T) {
 
 	// wants := VResults{}
 
-	res, ok := Validate(data, rules)
-	fmt.Printf("res: %#v\nstatus: %v\n\n", res, ok)
+	res := Validate(data, rules)
+	fmt.Printf("res: %#v\n\n", res)
 
-	for k, v := range res {
-		fmt.Printf("Key: %v, Value: %+v\n", k, v[0])
-	}
+	/*
+		for k, v := range res {
+			fmt.Printf("Key: %v, Value: %+v\n", k, v[0])
+		}
+	*/
 
 	/*
 		for _, table := range tables {
